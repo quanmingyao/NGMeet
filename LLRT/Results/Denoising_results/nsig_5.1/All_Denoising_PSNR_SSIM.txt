@@ -1,0 +1,1 @@
+chart_and_stuffed_toy_msUint8.mat : PSNR_SSTV = 38.62  SSIM_SSTV = 0.9602 SAM_SSTV = 0.106008  /nchart_and_stuffed_toy_msUint8.mat : PSNR_TDL = 45.11  SSIM_TDL = 0.9890 SAM_TDL = 0.042690  /nchart_and_stuffed_toy_msUint8.mat : PSNR_LLRT = 46.35  SSIM_LLRT = 0.9940 SAM_LLRT = 0.034090  /n

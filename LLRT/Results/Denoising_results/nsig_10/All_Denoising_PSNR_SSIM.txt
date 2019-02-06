@@ -1,0 +1,3 @@
+chart_and_stuffed_toy_msUint8.mat : PSNR_BM4D = 41.95  SSIM_BM4D = 0.9838 SAM_BM4D =0.058696  ERGAS_BM4D =30.335923 
+chart_and_stuffed_toy_msUint8.mat : PSNR_PARAFAC = 35.96  SSIM_PARAFAC = 0.9266 SAM_PARAFAC = 0.119620  ERGAS_PARAFAC = 60.647622 
+chart_and_stuffed_toy_msUint8.mat : PSNR_LRTA = 38.89  SSIM_LRTA = 0.9512 SAM_LRTA = 0.092383  ERGAS_LRTA = 43.206571 

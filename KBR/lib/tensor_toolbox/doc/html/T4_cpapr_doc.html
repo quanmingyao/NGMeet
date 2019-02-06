@@ -1,0 +1,157 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Alternating Poisson Regression for fitting CP to sparse count data</title><meta name="generator" content="MATLAB 7.13"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2012-02-01"><meta name="DC.source" content="T4_cpapr_doc.m"><style type="text/css">
+
+body {
+  background-color: white;
+  margin:10px;
+}
+
+h1 {
+  color: #990000; 
+  font-size: x-large;
+}
+
+h2 {
+  color: #990000;
+  font-size: medium;
+}
+
+/* Make the text shrink to fit narrow windows, but not stretch too far in 
+wide windows. */ 
+p,h1,h2,div.content div {
+  max-width: 600px;
+  /* Hack for IE6 */
+  width: auto !important; width: 600px;
+}
+
+pre.codeinput {
+  background: #EEEEEE;
+  padding: 10px;
+}
+@media print {
+  pre.codeinput {word-wrap:break-word; width:100%;}
+} 
+
+span.keyword {color: #0000FF}
+span.comment {color: #228B22}
+span.string {color: #A020F0}
+span.untermstring {color: #B20000}
+span.syscmd {color: #B28C00}
+
+pre.codeoutput {
+  color: #666666;
+  padding: 10px;
+}
+
+pre.error {
+  color: red;
+}
+
+p.footer {
+  text-align: right;
+  font-size: xx-small;
+  font-weight: lighter;
+  font-style: italic;
+  color: gray;
+}
+
+  </style></head><body><div class="content"><h1>Alternating Poisson Regression for fitting CP to sparse count data</h1><!--introduction--><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Set up a sample problem</a></li><li><a href="#2">Call CP-APR</a></li></ul></div><h2>Set up a sample problem<a name="1"></a></h2><p>We follow the general procedure outlined by E. C. Chi and T. G. Kolda, On Tensors, Sparsity, and Nonnegative Factorizations, arXiv:1112.2414 [math.NA], December 2011 (<a href="http://arxiv.org/abs/1112.2414)">http://arxiv.org/abs/1112.2414)</a>.</p><pre class="codeinput"><span class="comment">% Pick the size and rank</span>
+sz = [100 80 60];
+R = 5;
+
+<span class="comment">% Generate factor matrices with a few large entries in each column; this</span>
+<span class="comment">% will be the basis of our soln.</span>
+A = cell(3,1);
+<span class="keyword">for</span> n = 1:length(sz)
+    A{n} = rand(sz(n), R);
+    <span class="keyword">for</span> r = 1:R
+        p = randperm(sz(n));
+        nbig = round( (1/R)*sz(n) );
+        A{n}(p(1:nbig),r) = 100 * A{n}(p(1:nbig),r);
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+lambda = rand(R,1);
+S = ktensor(lambda, A);
+S = normalize(S,<span class="string">'sort'</span>,1);
+
+<span class="comment">% Create sparse test problem based on provided solution.</span>
+nz = prod(sz) * .05;
+info = create_problem(<span class="string">'Soln'</span>, S, <span class="string">'Sparse_Generation'</span>, nz);
+
+<span class="comment">% Extract data and solution</span>
+X = info.Data;
+M_true = info.Soln;
+</pre><h2>Call CP-APR<a name="2"></a></h2><pre class="codeinput"><span class="comment">% Compute a solution</span>
+M = cp_apr(X, R, <span class="string">'printitn'</span>, 10);
+
+<span class="comment">% Score the solution</span>
+factor_match_score = score(M, M_true, <span class="string">'greedy'</span>, true)
+</pre><pre class="codeoutput">
+CP_APR:
+ Iter   10: Inner Its = 30 KKT violation = 7.602374e-002, nViolations =  0
+ Iter   20: Inner Its = 30 KKT violation = 5.132380e-002, nViolations =  0
+ Iter   30: Inner Its = 30 KKT violation = 5.515916e-004, nViolations =  0
+===========================================
+ Final log-likelihood = -8.281889e+003 
+ Final least squares fit = 5.784579e-001 
+ Final KKT violation = 9.9202395e-005
+ Total inner iterations = 1034
+
+factor_match_score =
+
+    0.9610
+
+</pre><p class="footer"><br>
+      Published with MATLAB&reg; 7.13<br></p></div><!--
+##### SOURCE BEGIN #####
+%% Alternating Poisson Regression for fitting CP to sparse count data
+
+%% Set up a sample problem
+% We follow the general procedure outlined by E. C. Chi and T. G. Kolda, 
+% On Tensors, Sparsity, and Nonnegative Factorizations, arXiv:1112.2414
+% [math.NA], December 2011 (http://arxiv.org/abs/1112.2414).
+
+% Pick the size and rank
+sz = [100 80 60];
+R = 5;
+
+% Generate factor matrices with a few large entries in each column; this
+% will be the basis of our soln.
+A = cell(3,1);
+for n = 1:length(sz)
+    A{n} = rand(sz(n), R);
+    for r = 1:R
+        p = randperm(sz(n));
+        nbig = round( (1/R)*sz(n) );
+        A{n}(p(1:nbig),r) = 100 * A{n}(p(1:nbig),r);
+    end
+end
+lambda = rand(R,1);
+S = ktensor(lambda, A);
+S = normalize(S,'sort',1);
+
+% Create sparse test problem based on provided solution. 
+nz = prod(sz) * .05;
+info = create_problem('Soln', S, 'Sparse_Generation', nz);
+
+% Extract data and solution
+X = info.Data;
+M_true = info.Soln;
+
+%% Call CP-APR
+
+% Compute a solution
+M = cp_apr(X, R, 'printitn', 10);
+
+% Score the solution
+factor_match_score = score(M, M_true, 'greedy', true)
+
+##### SOURCE END #####
+--></body></html>
